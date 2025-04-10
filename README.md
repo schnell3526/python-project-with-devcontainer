@@ -22,6 +22,6 @@ docker build . -f docker/Dockerfile --target prod --tag my_package
 
 実行
 ```shell
-$ docker run --rm sample_package
+$ docker run --rm my_package
 INFO:__main__:Hello, World!
 ```

@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "my-package"
+version = "0.1.0"
+description = ""
+authors = ["schnell3526 <schnell3526@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.13"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.8.2"
+mypy = "^1.13.0"
+pytest = "^8.3.4"
+coverage = "^7.6.9"
+
+[tool.mypy]
+ignore_missing_imports = true
+disallow_untyped_defs = true
+no_site_packages = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+lint.select = ["ALL"]
+lint.ignore = [
+    "D417",      # https://docs.astral.sh/ruff/rules/undocumented-param/#cache-dir
+    "D415",  # https://docs.astral.sh/ruff/rules/ends-in-punctuation/
+
+]
+exclude = [
+    ".git",
+    ".github",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "__pycache__",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# tests ディレクトリ以下に対して除外するルールを指定する
+"tests/**/*" = [
+    "S101",  # assert
+    "PLR2004",  # magic-value-comparison
+    "INP001",  # input
+    "D" # pydocstyle
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 5
+
+[tool.ruff.lint.isort]
+known-first-party = ["my_package"]

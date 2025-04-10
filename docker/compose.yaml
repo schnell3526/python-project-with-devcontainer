@@ -1,0 +1,11 @@
+services:
+  devcontainer:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+      target: dev
+      args:
+        - USER_NAME=${USER}
+    tty: true
+    volumes:
+      - ../:/python-project-with-devcontainer

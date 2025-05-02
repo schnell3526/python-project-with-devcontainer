@@ -33,7 +33,7 @@ FROM base AS dev
 ARG USER_NAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
-ENV PYTHONPATH="."
+ENV PYTHONPATH="src"
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 # apt で install したいパッケージがあったらここに追加
 RUN apt-get update \
@@ -77,11 +77,12 @@ RUN poetry install --only=main
 FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION} AS prod
 ARG PYSETUP_PATH
 ENV PATH=${PYSETUP_PATH}/.venv/bin:$PATH \
+    PYTHONPATH="src" \
     PYTHONUNBUFFERED=1
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 WORKDIR /app
 COPY --from=build ${PYSETUP_PATH}/.venv/ ${PYSETUP_PATH}/.venv/
-COPY my_package my_package
+COPY src src
 RUN useradd -m appuser
 USER appuser
 CMD ["python", "-m", "my_package.main"]

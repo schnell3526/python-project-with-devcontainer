@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION=3.13
 ARG PYSETUP_PATH=/opt/pysetup
 
-ARG POETRY_VERSION=2.1.1
+ARG POETRY_VERSION=2.1.3
 ARG DEBIAN_VERSION=bookworm
 #############################################
 # base ステージ

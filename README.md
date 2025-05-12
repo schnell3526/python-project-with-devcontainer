@@ -4,13 +4,13 @@ devcontainer を使った Python プロジェクトのサンプル
 # 起動確認
 
 ```shell
-poetry run python -m my_package.main
+uv run -m my_package.main
 ```
 
 # テスト実行
 
 ```shell
-poetry run pytest
+uv run pytest
 ```
 
 # 本番用コンテナ実行確認

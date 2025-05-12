@@ -1,19 +1,18 @@
-[tool.poetry]
-name = "my-package"
+[project]
+name = "app"
 version = "0.1.0"
-description = ""
-authors = ["schnell3526 <schnell3526@gmail.com>"]
+description = "Add your description here"
 readme = "README.md"
-package-mode = false
+requires-python = ">=3.11"
+dependencies = []
 
-[tool.poetry.dependencies]
-python = "^3.13"
-
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.8.2"
-mypy = "^1.13.0"
-pytest = "^8.3.4"
-coverage = "^7.6.9"
+[dependency-groups]
+dev = [
+    "coverage>=7.8.0",
+    "mypy>=1.15.0",
+    "pytest>=8.3.5",
+    "ruff>=0.11.9",
+]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -33,8 +32,6 @@ lint.ignore = [
 exclude = [
     ".git",
     ".github",
-    ".mypy_cache",
-    ".pytest_cache",
     ".ruff_cache",
     ".venv",
     "__pycache__",

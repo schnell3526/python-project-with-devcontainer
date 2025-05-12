@@ -22,7 +22,7 @@
 		"devcontainer"
 	],
 	"workspaceFolder": "/python-project-with-devcontainer",
-	"updateContentCommand": "set -ex && poetry install",
+	"updateContentCommand": "set -ex && uv sync",
 	"customizations": {
 		"vscode": {
 			"settings": {

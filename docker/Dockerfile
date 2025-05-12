@@ -1,39 +1,27 @@
-ARG PYTHON_VERSION=3.13
 ARG PYSETUP_PATH=/opt/pysetup
-
-ARG POETRY_VERSION=2.1.3
+ARG UV_VERSION=0.7.3
 ARG DEBIAN_VERSION=bookworm
+
 #############################################
 # base ステージ
 # ビルダーや開発環境の共通設定
 #############################################
-FROM python:${PYTHON_VERSION}-${DEBIAN_VERSION} AS base
-ARG POETRY_VERSION
+FROM ghcr.io/astral-sh/uv:${UV_VERSION}-bookworm AS base
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 ENV PIP_NO_CACHE_DIR=off \
     PIP_DISABLE_PIP_VERSION_CHECK=on
-ENV POETRY_VERSION=${POETRY_VERSION} \
-    POETRY_HOME="/opt/poetry" \
-    POETRY_VIRTUALENVS_IN_PROJECT=true
-ENV PATH=${POETRY_HOME}/bin:$PATH
-SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
-        curl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-RUN curl -sSL https://install.python-poetry.org | python3 -
 
 #############################################
-# 開発環境
+# devcontainer ステージ
 # devcontainer でアタッチするコンテナ用のイメージ
 #############################################
 FROM base AS dev
-ARG USER_NAME=vscode
+ARG USER_NAME=devuser
 ARG USER_UID=1000
 ARG USER_GID=1000
-ENV PYTHONPATH="src"
+ENV PYTHONPATH="src" \
+    UV_LINK_MODE=symlink
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 # apt で install したいパッケージがあったらここに追加
 RUN apt-get update \
@@ -47,7 +35,6 @@ RUN apt-get update \
         vim \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-# ユーザーとグループを作成し、デフォルトシェルを bash に設定
 RUN if getent group ${USER_GID} > /dev/null 2>&1; then \
         echo "Group with GID ${USER_GID} already exists. Skipping group creation."; \
     else \
@@ -58,31 +45,32 @@ RUN if getent group ${USER_GID} > /dev/null 2>&1; then \
     && usermod -aG sudo "${USER_NAME}" \
     && echo "${USER_NAME} ALL=(ALL) NOPASSWD:ALL" > "/etc/sudoers.d/${USER_NAME}" \
     && chmod 0440 "/etc/sudoers.d/${USER_NAME}"
+CMD ["bash"]
 
 #############################################
-# build 用ステージ
+# build ステージ
 # プロジェクトのビルドをするためのイメージ
 #############################################
 FROM base AS build
 ARG PYSETUP_PATH
-SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
+ENV UV_PROJECT_ENVIRONMENT=${PYSETUP_PATH}/.venv/ \
+    UV_PYTHON_INSTALL_DIR=${PYSETUP_PATH}/
 WORKDIR ${PYSETUP_PATH}
-COPY pyproject.toml poetry.lock* ./
-RUN poetry install --only=main
+SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
+COPY pyproject.toml .python-version poetry.lock* ./
+RUN uv sync --no-cache-dir --no-dev \
+    && rm -rf pyproject.toml .python-version uv.lock
 
 #############################################
 # production 用ステージ
 # ビルドした依存関係やソースを build ステージからコピーする
 #############################################
-FROM python:${PYTHON_VERSION}-slim-${DEBIAN_VERSION} AS prod
+FROM gcr.io/distroless/base-debian12:nonroot AS prod
 ARG PYSETUP_PATH
 ENV PATH=${PYSETUP_PATH}/.venv/bin:$PATH \
     PYTHONPATH="src" \
     PYTHONUNBUFFERED=1
-SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 WORKDIR /app
-COPY --from=build ${PYSETUP_PATH}/.venv/ ${PYSETUP_PATH}/.venv/
+COPY --from=build ${PYSETUP_PATH}/ ${PYSETUP_PATH}/
 COPY src src
-RUN useradd -m appuser
-USER appuser
 CMD ["python", "-m", "my_package.main"]

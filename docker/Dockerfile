@@ -1,12 +1,13 @@
 ARG PYSETUP_PATH=/opt/pysetup
 ARG UV_VERSION=0.7.3
-ARG DEBIAN_VERSION=bookworm
+ARG DEBIAN_VERSION=12
+ARG DEBIAN_VERSION_CODENAME=bookworm
 
 #############################################
 # base ステージ
 # ビルダーや開発環境の共通設定
 #############################################
-FROM ghcr.io/astral-sh/uv:${UV_VERSION}-bookworm AS base
+FROM ghcr.io/astral-sh/uv:${UV_VERSION}-${DEBIAN_VERSION_CODENAME} AS base
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 ENV PIP_NO_CACHE_DIR=off \
@@ -20,8 +21,7 @@ FROM base AS dev
 ARG USER_NAME=devuser
 ARG USER_UID=1000
 ARG USER_GID=1000
-ENV PYTHONPATH="src" \
-    UV_LINK_MODE=symlink
+ENV PYTHONPATH="src"
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 # apt で install したいパッケージがあったらここに追加
 RUN apt-get update \
@@ -65,7 +65,7 @@ RUN uv sync --no-cache-dir --no-dev \
 # production 用ステージ
 # ビルドした依存関係やソースを build ステージからコピーする
 #############################################
-FROM gcr.io/distroless/base-debian12:nonroot AS prod
+FROM gcr.io/distroless/base-debian${DEBIAN_VERSION}:nonroot AS prod
 ARG PYSETUP_PATH
 ENV PATH=${PYSETUP_PATH}/.venv/bin:$PATH \
     PYTHONPATH="src" \

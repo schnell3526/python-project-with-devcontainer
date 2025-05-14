@@ -4,7 +4,8 @@
 	"updateRemoteUserUID": true,
 	"mounts": [
 		"source=${localEnv:HOME}/.gitconfig,target=/home/${localEnv:USER}/.gitconfig,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/.ssh,target=/home/${localEnv:USER}/.ssh,type=bind,consistency=cached"
+		"source=${localEnv:HOME}/.local/,target=/home/${localEnv:USER}/.local/,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.cache/,target=/home/${localEnv:USER}/.cache/,type=bind,consistency=cached"
 	],
 	"features": {
 		"ghcr.io/devcontainers/features/aws-cli:1": {},
